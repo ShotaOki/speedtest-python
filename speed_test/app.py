@@ -7,6 +7,7 @@ from modules.module_sleep import ModuleSleep
 from modules.module_sts import ModuleSts
 from modules.module_curl_sts import ModuleCurlSts
 from modules.module_curl_bedrock import ModuleCurlBedrock
+from modules.module_curl_s3 import ModuleCurlS3
 from modules.process_subinterpret import ProcessSubinterpreter
 from modules.process_threads import ProcessThreads
 from modules.process_async import ProcessAsync
@@ -14,6 +15,7 @@ from modules.process_single import ProcessSingle
 from modules.process_subprocess import ProcessSubprocess
 from modules.process_subproc_subinterpret import ProcessSubprocessSubinterpreter
 from modules.process_threads_subinterpret import ProcessThreadsSubinterpreter
+from modules.module_boto_s3 import ModuleBotoS3
 
 # import requests
 
@@ -39,6 +41,11 @@ def lambda_handler(event, context):
     elif parameter.target == ProcessTarget.bedrock:
         module = ModuleCurlBedrock
         parameter.allow_to_await = 1
+    elif parameter.target == ProcessTarget.s3:
+        module = ModuleCurlS3
+        parameter.allow_to_await = 1
+    elif parameter.target == ProcessTarget.boto_s3:
+        module = ModuleBotoS3
     # =================================================================
     if parameter.type in module.deny_list():
         return {

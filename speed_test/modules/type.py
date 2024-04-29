@@ -15,6 +15,7 @@ class ProcessType(str, Enum):
 
 class ProcessTarget(str, Enum):
     s3 = "s3"
+    boto_s3 = "boto_s3"
     bedrock = "bedrock"
     sts = "sts"
     curl_sts = "curl_sts"

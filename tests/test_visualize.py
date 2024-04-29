@@ -188,7 +188,21 @@ def _test_sts(capfd):
     )
 
 
-def test_curl_sts(capfd):
+def _test_curl_sts(capfd):
     _execute_test_by_process(
         capfd, "curl_sts", "HTTP STSリクエスト", PROCESS_COUNT_REQUESTS
+    )
+
+
+def _test_curl_bedrock(capfd):
+    _execute_test_by_process(capfd, "bedrock", "Claude3 Haikuの実行", 3)
+
+
+def _test_curl_s3(capfd):
+    _execute_test_by_process(capfd, "s3", "S3リクエスト", PROCESS_COUNT_REQUESTS)
+
+
+def test_boto_s3(capfd):
+    _execute_test_by_process(
+        capfd, "boto_s3", "Boto3 S3リクエスト", PROCESS_COUNT_REQUESTS
     )

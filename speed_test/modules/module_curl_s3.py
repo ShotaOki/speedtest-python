@@ -1,21 +1,42 @@
 import json
 from modules.module_base import ModuleBase
 from modules.type import InputType
-from modules.common_boto_as_httprequest import Boto3LowLevelClient
+import boto3
+from botocore.config import Config
+
+BUCKET_NAME = "datastore-20240429-speedtest"
+FILES = [
+    "2e029d6a423a20332bec0a759a916c72.png",
+    "7fb3cf241f747ab52c3e6037e6129bff.png",
+    "33c57611cb27e20d17366152507d2ec7.png",
+    "92fe50623233958604c903cd7df1feab.png",
+    "ae9031329652b55a3cf8cad4516477f3.png",
+    "ca11af11062a02a1e41e126a47790d4e.png",
+    "0c1f76d7156e51a67936cab060ba0780.png",
+    "4cc6ea269141283bcf3a22669cef9ec4.png",
+    "9d9361c013f2d41d19189edbcee0ea1a.png",
+    "dbaffffcdacce7ef3b677d6d0ab01a2e.png",
+]
 
 
-class ModuleCurlSts(ModuleBase):
+class ModuleCurlS3(ModuleBase):
     @classmethod
     def create_parameter(cls, index: int, input: InputType):
 
-        get_caller_identity = Boto3LowLevelClient("sts").create_request_parameter(
-            "GetCallerIdentity", {}
+        s3 = boto3.client("s3")
+        my_config = Config(region_name="ap-northeast-1", signature_version="s3v4")
+        s3 = boto3.client("s3", config=my_config)
+        presigned_url = s3.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={
+                "Bucket": BUCKET_NAME,
+                "Key": FILES[index],
+            },
+            ExpiresIn=3600,
         )
 
         return {
-            "get_caller_identity": ModuleBase.str_with_padding(
-                json.dumps(get_caller_identity)
-            ),
+            "presigned_url": ModuleBase.str_with_padding(presigned_url),
             "start_date": ModuleBase.str_with_padding(input.start_date),
             "processing": ModuleBase.str_with_padding(input.type.value),
             "module_name": ModuleBase.str_with_padding(input.target.value),
@@ -24,7 +45,7 @@ class ModuleCurlSts(ModuleBase):
 
     @classmethod
     def start(cls, parameter):
-        get_caller_identity: str = parameter["get_caller_identity"]
+        presigned_url: str = parameter["presigned_url"]
         start_date: str = parameter["start_date"]
         processing: str = parameter["processing"]
         module_name: str = parameter["module_name"]
@@ -33,10 +54,10 @@ class ModuleCurlSts(ModuleBase):
         from time import perf_counter_ns
         import datetime
         from decimal import Decimal
-        import json
         import urllib3
+        import json
 
-        get_caller_identity = json.loads(get_caller_identity.strip())
+        presigned_url = presigned_url.strip()
         start_date = start_date.strip()
         processing = processing.strip()
         module_name = module_name.strip()
@@ -48,13 +69,8 @@ class ModuleCurlSts(ModuleBase):
 
         # START PROCESS -----------------------
 
-        response = urllib3.PoolManager().request(
-            method=get_caller_identity["method"],
-            url=get_caller_identity["url"],
-            body=get_caller_identity["body"],
-            headers=get_caller_identity["headers"],
-        )
-        res = response.data.decode("utf-8")
+        response = urllib3.PoolManager().request(method="get", url=presigned_url)
+        res = response.data
 
         # END PROCESS -------------------------
 
@@ -74,7 +90,7 @@ class ModuleCurlSts(ModuleBase):
 
     @classmethod
     async def start_async(cls, parameter):
-        get_caller_identity: str = parameter["get_caller_identity"]
+        presigned_url: str = parameter["presigned_url"]
         start_date: str = parameter["start_date"]
         processing: str = parameter["processing"]
         module_name: str = parameter["module_name"]
@@ -83,11 +99,10 @@ class ModuleCurlSts(ModuleBase):
         from time import perf_counter_ns
         import datetime
         from decimal import Decimal
-        import json
         import aiohttp
         from aiohttp.client import URL
 
-        get_caller_identity = json.loads(get_caller_identity.strip())
+        presigned_url = presigned_url.strip()
         start_date = start_date.strip()
         processing = processing.strip()
         module_name = module_name.strip()
@@ -101,12 +116,10 @@ class ModuleCurlSts(ModuleBase):
 
         async with aiohttp.ClientSession() as session:
             async with session.request(
-                method=get_caller_identity["method"],
-                url=URL(get_caller_identity["url"], encoded=True),
-                data=get_caller_identity["body"],
-                headers=get_caller_identity["headers"],
+                method="get",
+                url=URL(presigned_url, encoded=True),
             ) as response:
-                res = await response.text()
+                res = await response.read()
 
         # END PROCESS -------------------------
 
