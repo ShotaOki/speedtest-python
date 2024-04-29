@@ -85,6 +85,7 @@ class ModuleCurlSts(ModuleBase):
         from decimal import Decimal
         import json
         import aiohttp
+        from aiohttp.client import URL
 
         get_caller_identity = json.loads(get_caller_identity.strip())
         start_date = start_date.strip()
@@ -101,7 +102,7 @@ class ModuleCurlSts(ModuleBase):
         async with aiohttp.ClientSession() as session:
             async with session.request(
                 method=get_caller_identity["method"],
-                url=get_caller_identity["url"],
+                url=URL(get_caller_identity["url"], encoded=True),
                 data=get_caller_identity["body"],
                 headers=get_caller_identity["headers"],
             ) as response:

@@ -6,6 +6,7 @@ from modules.module_curl import ModuleCurl
 from modules.module_sleep import ModuleSleep
 from modules.module_sts import ModuleSts
 from modules.module_curl_sts import ModuleCurlSts
+from modules.module_curl_bedrock import ModuleCurlBedrock
 from modules.process_subinterpret import ProcessSubinterpreter
 from modules.process_threads import ProcessThreads
 from modules.process_async import ProcessAsync
@@ -34,6 +35,9 @@ def lambda_handler(event, context):
         module = ModuleSts
     elif parameter.target == ProcessTarget.curl_sts:
         module = ModuleCurlSts
+        parameter.allow_to_await = 1
+    elif parameter.target == ProcessTarget.bedrock:
+        module = ModuleCurlBedrock
         parameter.allow_to_await = 1
     # =================================================================
     if parameter.type in module.deny_list():

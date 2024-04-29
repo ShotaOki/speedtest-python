@@ -1,26 +1,38 @@
+import json
 from modules.module_base import ModuleBase
 from modules.type import InputType
+from modules.common_boto_as_httprequest import Boto3LowLevelClient
 
 
-class ModuleCurl(ModuleBase):
-
-    URL_LIST = [
-        "https://www.google.com/",
-        "https://www.yahoo.co.jp/",
-        "https://www.bing.com/",
-        "https://www.amazon.co.jp/",
-        "https://httpd.apache.org/",
-        "https://www.w3.org/",
-        "https://www.python.org/",
-        "https://www.microsoft.com/",
-        "https://www.apple.com/",
-        "https://ja.wikipedia.org/",
-    ]
-
+class ModuleCurlBedrock(ModuleBase):
     @classmethod
     def create_parameter(cls, index: int, input: InputType):
+
+        invoke_model = Boto3LowLevelClient(
+            "bedrock-runtime", credential_scope="bedrock", region_name="us-east-1"
+        ).create_request_parameter(
+            "InvokeModel",
+            {
+                "body": json.dumps(
+                    {
+                        "anthropic_version": "bedrock-2023-05-31",
+                        "max_tokens": 100,
+                        "messages": [
+                            {
+                                "role": "user",
+                                "content": "こんにちは、Claude",
+                            }
+                        ],
+                    }
+                ),
+                "modelId": "anthropic.claude-3-haiku-20240307-v1:0",
+                "accept": "application/json",
+                "contentType": "application/json",
+            },
+        )
+
         return {
-            "url": ModuleBase.str_with_padding(cls.URL_LIST[index]),
+            "invoke_model": ModuleBase.str_with_padding(json.dumps(invoke_model)),
             "start_date": ModuleBase.str_with_padding(input.start_date),
             "processing": ModuleBase.str_with_padding(input.type.value),
             "module_name": ModuleBase.str_with_padding(input.target.value),
@@ -29,7 +41,7 @@ class ModuleCurl(ModuleBase):
 
     @classmethod
     def start(cls, parameter):
-        url: str = parameter["url"]
+        invoke_model: str = parameter["invoke_model"]
         start_date: str = parameter["start_date"]
         processing: str = parameter["processing"]
         module_name: str = parameter["module_name"]
@@ -41,7 +53,7 @@ class ModuleCurl(ModuleBase):
         import json
         import urllib3
 
-        url = url.strip()
+        invoke_model = json.loads(invoke_model.strip())
         start_date = start_date.strip()
         processing = processing.strip()
         module_name = module_name.strip()
@@ -53,9 +65,13 @@ class ModuleCurl(ModuleBase):
 
         # START PROCESS -----------------------
 
-        response = urllib3.PoolManager().request("GET", url)
+        response = urllib3.PoolManager().request(
+            method=invoke_model["method"],
+            url=invoke_model["url"],
+            body=invoke_model["body"],
+            headers=invoke_model["headers"],
+        )
         res = response.data.decode("utf-8")
-
         # END PROCESS -------------------------
 
         end_secs = Decimal(perf_counter_ns() - start) / Decimal(10**9)
@@ -74,7 +90,7 @@ class ModuleCurl(ModuleBase):
 
     @classmethod
     async def start_async(cls, parameter):
-        url: str = parameter["url"]
+        invoke_model: str = parameter["invoke_model"]
         start_date: str = parameter["start_date"]
         processing: str = parameter["processing"]
         module_name: str = parameter["module_name"]
@@ -87,7 +103,7 @@ class ModuleCurl(ModuleBase):
         import aiohttp
         from aiohttp.client import URL
 
-        url = url.strip()
+        invoke_model = json.loads(invoke_model.strip())
         start_date = start_date.strip()
         processing = processing.strip()
         module_name = module_name.strip()
@@ -100,9 +116,13 @@ class ModuleCurl(ModuleBase):
         # START PROCESS -----------------------
 
         async with aiohttp.ClientSession() as session:
-            async with session.get(URL(url, encoded=True)) as response:
+            async with session.request(
+                method=invoke_model["method"],
+                url=URL(invoke_model["url"], encoded=True),
+                data=invoke_model["body"],
+                headers=invoke_model["headers"],
+            ) as response:
                 res = await response.text()
-
         # END PROCESS -------------------------
 
         end_secs = Decimal(perf_counter_ns() - start) / Decimal(10**9)
