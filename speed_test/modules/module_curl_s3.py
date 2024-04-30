@@ -4,19 +4,8 @@ from modules.type import InputType
 import boto3
 from botocore.config import Config
 
-BUCKET_NAME = "datastore-20240429-speedtest"
-FILES = [
-    "2e029d6a423a20332bec0a759a916c72.png",
-    "7fb3cf241f747ab52c3e6037e6129bff.png",
-    "33c57611cb27e20d17366152507d2ec7.png",
-    "92fe50623233958604c903cd7df1feab.png",
-    "ae9031329652b55a3cf8cad4516477f3.png",
-    "ca11af11062a02a1e41e126a47790d4e.png",
-    "0c1f76d7156e51a67936cab060ba0780.png",
-    "4cc6ea269141283bcf3a22669cef9ec4.png",
-    "9d9361c013f2d41d19189edbcee0ea1a.png",
-    "dbaffffcdacce7ef3b677d6d0ab01a2e.png",
-]
+BUCKET_NAME = "(BUCKET_NAME)"
+FILES = ["(FILE_NAMES)"]
 
 
 class ModuleCurlS3(ModuleBase):
