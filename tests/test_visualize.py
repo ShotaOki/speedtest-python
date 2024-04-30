@@ -168,17 +168,17 @@ def _execute_test_by_process(
         image.crop((0, 0, image.width, int(image.height / 2))).save(file_name)
 
 
-def _test_local(capfd):
+def test_local(capfd):
     _execute_test_by_process(
         capfd, "local", "フィボナッチ数列の計算", PROCESS_COUNT_REQUESTS
     )
 
 
-def _test_sleep(capfd):
+def test_sleep(capfd):
     _execute_test_by_process(capfd, "sleep", "スリープ処理", PROCESS_COUNT_REQUESTS)
 
 
-def _test_curl(capfd):
+def test_curl(capfd):
     _execute_test_by_process(capfd, "curl", "HTTPリクエスト", PROCESS_COUNT_REQUESTS)
 
 
@@ -202,7 +202,7 @@ def _test_curl_s3(capfd):
     _execute_test_by_process(capfd, "s3", "S3リクエスト", PROCESS_COUNT_REQUESTS)
 
 
-def test_boto_s3(capfd):
+def _test_boto_s3(capfd):
     _execute_test_by_process(
         capfd, "boto_s3", "Boto3 S3リクエスト", PROCESS_COUNT_REQUESTS
     )

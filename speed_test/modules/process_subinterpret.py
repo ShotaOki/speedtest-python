@@ -13,16 +13,8 @@ class ProcessSubinterpreter(ProcessBase):
         interpreters.destroy(intp_id)
 
     def start(self, input: InputType, module: ModuleBase):
-
-        threads = []
         # サブインタープリターの実行
         for index in range(input.process_count):
             ProcessSubinterpreter._start_thread(
                 module.start_proc_str(), module.create_parameter(index, input)
             )
-
-        # すべてのスレッドが完了するのを待つ
-        for thread in threads:
-            thread.join()
-
-        pass
