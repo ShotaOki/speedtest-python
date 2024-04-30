@@ -28,5 +28,3 @@ class ProcessThreadsSubinterpreter(ProcessBase):
         # すべてのスレッドが完了するのを待つ
         for thread in threads:
             thread.join()
-
-        pass
